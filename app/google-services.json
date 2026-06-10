@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "363942713021",
+    "firebase_url": "https://survaycollector-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "survaycollector",
+    "storage_bucket": "survaycollector.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:363942713021:android:ae5d5e6514d6d4012609d4",
+        "android_client_info": {
+          "package_name": "com.example.surveycollector"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdI_7pyqF36JgZu0wOxWFj4WpjxFv0DVo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/surveyListFragment">
+
+    <fragment
+        android:id="@+id/surveyListFragment"
+        android:name="com.example.surveycollector.ui.fragment.SurveyListFragment"
+        android:label="Surveys"
+        tools:layout="@layout/fragment_survey_list">
+        <action
+            android:id="@+id/action_surveyListFragment_to_createSurveyFragment"
+            app:destination="@id/createSurveyFragment" />
+        <action
+            android:id="@+id/action_surveyListFragment_to_surveyLinkFragment"
+            app:destination="@id/surveyLinkFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/createSurveyFragment"
+        android:name="com.example.surveycollector.ui.fragment.CreateSurveyFragment"
+        android:label="Create Survey"
+        tools:layout="@layout/fragment_create_survey">
+        <argument
+            android:name="surveyId"
+            app:argType="integer"
+            android:defaultValue="-1" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/dashboardFragment"
+        android:name="com.example.surveycollector.ui.fragment.DashboardFragment"
+        android:label="Dashboard"
+        tools:layout="@layout/fragment_dashboard" />
+
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.surveycollector.ui.fragment.ProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_profile" />
+
+    <fragment
+        android:id="@+id/surveyLinkFragment"
+        android:name="com.example.surveycollector.ui.fragment.SurveyLinkFragment"
+        android:label="Get Link"
+        tools:layout="@layout/fragment_survey_link">
+        <argument
+            android:name="surveyId"
+            app:argType="integer" />
+    </fragment>
+</navigation>

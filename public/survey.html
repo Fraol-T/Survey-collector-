@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Collector</title>
+    <style>
+        :root {
+            --primary-color: #1F4E79;
+            --primary-hover: #153554;
+            --bg-color: #F8FAFC;
+            --card-bg: #FFFFFF;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --border-color: #E2E8F0;
+            --error-color: #EF4444;
+            --success-color: #22C55E;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.5;
+            padding: 24px 16px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            padding: 32px 24px;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+        }
+
+        p.description {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background-color: #FEF2F2;
+            color: #991B1B;
+            border: 1px solid #FCA5A5;
+        }
+
+        .alert-success {
+            background-color: #F0FDF4;
+            color: #166534;
+            border: 1px solid #86EFAC;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .question-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .question-title {
+            font-weight: 600;
+            font-size: 16px;
+            margin-bottom: 12px;
+            color: var(--text-main);
+        }
+
+        .required-star {
+            color: var(--error-color);
+            margin-left: 2px;
+        }
+
+        label.input-label {
+            display: block;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        input[type="text"],
+        input[type="email"],
+        textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-family: inherit;
+            font-size: 14px;
+            color: var(--text-main);
+            background-color: #FFFFFF;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(31, 78, 121, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .option-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .option-item input {
+            margin-right: 10px;
+            width: 16px;
+            height: 16px;
+            accent-color: var(--primary-color);
+            cursor: pointer;
+        }
+
+        .option-item span {
+            font-size: 14px;
+            color: var(--text-main);
+        }
+
+        button.btn-submit {
+            display: block;
+            width: 100%;
+            background-color: var(--primary-color);
+            color: #FFFFFF;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+
+        button.btn-submit:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button.btn-submit:active {
+            transform: scale(0.98);
+        }
+
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Loading Panel -->
+    <div id="loadingPanel" class="card loading-container">
+        <div class="spinner"></div>
+        <div style="color: var(--text-muted); font-size: 14px;">Loading survey...</div>
+    </div>
+
+    <!-- Error Panel -->
+    <div id="errorPanel" class="card hidden">
+        <div id="errorAlert" class="alert alert-error">Error message goes here</div>
+    </div>
+
+    <!-- Success Panel -->
+    <div id="successPanel" class="card hidden" style="text-align: center; padding: 48px 24px;">
+        <div style="font-size: 48px; margin-bottom: 16px;">✓</div>
+        <h1>Thank you!</h1>
+        <p style="color: var(--text-muted); font-size: 16px;">Your response has been recorded successfully.</p>
+    </div>
+
+    <!-- Form Panel -->
+    <form id="surveyForm" class="hidden">
+        <!-- Survey Header Info -->
+        <div class="card">
+            <h1 id="surveyTitle">Survey Title</h1>
+            <p id="surveyDescription" class="description">Survey Description</p>
+
+            <!-- Inline Error Box -->
+            <div id="formErrorBox" class="alert alert-error hidden"></div>
+
+            <!-- Registration Area -->
+            <div id="registrationContainer" class="hidden" style="border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 20px;">
+                <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text-main);">Respondent Registration</h3>
+                <div class="form-group">
+                    <label class="input-label" for="respondentName">Name <span class="required-star">*</span></label>
+                    <input type="text" id="respondentName" placeholder="Enter your full name">
+                </div>
+                <div class="form-group">
+                    <label class="input-label" for="respondentEmail">Email Address <span class="required-star">*</span></label>
+                    <input type="email" id="respondentEmail" placeholder="Enter your email address">
+                </div>
+            </div>
+        </div>
+
+        <!-- Questions Area -->
+        <div id="questionsContainer"></div>
+
+        <!-- Submit Button -->
+        <div style="margin-top: 24px;">
+            <button type="submit" class="btn-submit">Submit Responses</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const DB = 'https://survaycollector-default-rtdb.europe-west1.firebasedatabase.app/';
+
+    // UI Elements
+    const loadingPanel = document.getElementById('loadingPanel');
+    const errorPanel = document.getElementById('errorPanel');
+    const errorAlert = document.getElementById('errorAlert');
+    const successPanel = document.getElementById('successPanel');
+    const surveyForm = document.getElementById('surveyForm');
+    const surveyTitle = document.getElementById('surveyTitle');
+    const surveyDescription = document.getElementById('surveyDescription');
+    const formErrorBox = document.getElementById('formErrorBox');
+    const registrationContainer = document.getElementById('registrationContainer');
+    const respondentName = document.getElementById('respondentName');
+    const respondentEmail = document.getElementById('respondentEmail');
+    const questionsContainer = document.getElementById('questionsContainer');
+
+    // Global variables
+    let surveyFirebaseKey = null;
+    let surveyLocalId = null;
+    let requiresRegistration = false;
+    let questionsList = []; // Array of questions sorted by orderIndex
+
+    // 1. Parse token and fetch data on load
+    window.addEventListener('DOMContentLoaded', async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+
+        if (!token) {
+            showErrorPage('Invalid survey link.');
+            return;
+        }
+
+        try {
+            // Step 1: Fetch ALL survey links and find the one matching our token
+            const linkRes = await fetch(`${DB}surveylinks.json`);
+            if (!linkRes.ok) throw new Error('Failed to retrieve survey link status.');
+            const linkData = await linkRes.json();
+
+            if (!linkData) {
+                showErrorPage('Invalid survey link.');
+                return;
+            }
+
+            // Find the link with the matching token
+            let linkObj = null;
+            for (const [key, val] of Object.entries(linkData)) {
+                if (val.token === token) {
+                    linkObj = val;
+                    break;
+                }
+            }
+
+            if (!linkObj) {
+                showErrorPage('Invalid survey link. This link does not exist.');
+                return;
+            }
+
+            if (linkObj.isActive === false || linkObj.isActive === 0) {
+                showErrorPage('This survey is no longer accepting responses.');
+                return;
+            }
+
+            // surveyId from the link is a Room integer ID (e.g. 1, 2)
+            surveyLocalId = linkObj.surveyId;
+
+            // Step 2: Fetch ALL surveys and find the one matching this surveyId
+            // The Android app stores surveys under Firebase push keys, but links reference
+            // the local Room integer ID. We need to find the survey by matching adminId/title
+            // or by checking all surveys since there's no direct Firebase path lookup.
+            const surveyRes = await fetch(`${DB}surveys.json`);
+            if (!surveyRes.ok) throw new Error('Failed to retrieve survey metadata.');
+            const surveysData = await surveyRes.json();
+
+            if (!surveysData) {
+                showErrorPage('Survey not found.');
+                return;
+            }
+
+            // Find the survey — the Android app stores the local Room ID in surveylinks.surveyId
+            // We need to match it. Since surveys are stored under Firebase push keys,
+            // we look for the survey whose data was synced for this local ID.
+            // The questions reference surveyId as a string of the local Room ID.
+            // We'll find the matching survey by looking at the most recent one that matches.
+            let surveyObj = null;
+            let matchedSurveyKey = null;
+
+            // Get all surveys as an array with their keys
+            const surveyEntries = Object.entries(surveysData);
+
+            // The link's surveyId is a local Room DB integer. Questions store surveyId as
+            // String(localId). We need to find the survey object. Since there may be
+            // duplicates (from re-seeding), we pick the first match.
+            // We identify by position/order since local IDs are sequential.
+            // Best approach: just use the survey data, we don't need to match by ID.
+            // We'll use questions to find the survey title and match.
+
+            // Actually, the simplest reliable approach: fetch questions that have
+            // surveyId matching the link's surveyId (as string), then render the survey.
+            // For the survey metadata, iterate surveys and find the one whose data
+            // we'll display. Since surveys may have duplicates, we need a better mapping.
+
+            // Let's try a direct approach: the web form only needs title, description,
+            // requiresRegistration. We can get that from ANY matching survey.
+            // For questions, we filter by surveyId == String(localId).
+
+            // Pick the last survey entry as the most recent one
+            // (Firebase push keys are chronologically sorted)
+            if (surveyEntries.length > 0) {
+                // Try to find by checking all surveys - just use the last one as fallback
+                matchedSurveyKey = surveyEntries[surveyEntries.length - 1][0];
+                surveyObj = surveyEntries[surveyEntries.length - 1][1];
+            }
+
+            // Better: look at questions to determine which survey this link belongs to,
+            // then find the survey title from the questions' surveyId
+            // Fetch questions first to determine the survey
+            const questionsRes = await fetch(`${DB}questions.json`);
+            if (!questionsRes.ok) throw new Error('Failed to retrieve survey questions.');
+            const questionsData = await questionsRes.json();
+
+            // Find questions where surveyId matches the link's local Room ID (as string or int)
+            let matchedQuestions = [];
+            if (questionsData) {
+                for (const [key, val] of Object.entries(questionsData)) {
+                    // Questions store surveyId as String(localId) e.g. "1", "2"
+                    if (String(val.surveyId) === String(surveyLocalId)) {
+                        matchedQuestions.push({ key, ...val });
+                    }
+                }
+            }
+
+            // Now find the correct survey object. We need to match based on the link's
+            // context. Since the Android app creates surveys with unique titles per admin,
+            // and the link's surveyId corresponds to a specific local survey,
+            // we should find the survey whose questions match.
+            // 
+            // Approach: Look through ALL surveys and find the one that was created for
+            // this specific surveyId. Since we know the questions reference this surveyId,
+            // and each survey creation syncs to Firebase, we can check adminId.
+            //
+            // Simplest approach that works: If there are matching questions, use any of the
+            // surveys. We need to find the right survey title/description though.
+            //
+            // The Android app stores survey.firebaseKey locally. When the SurveyLinkDto
+            // posts surveyId as the local Room ID, we need another way.
+            //
+            // Most reliable: iterate all surveys and pick the one that has the same
+            // relative position. Since surveys are created sequentially:
+            // Local ID 1 -> first survey pushed, Local ID 2 -> second unique survey, etc.
+            //
+            // Actually even simpler: We have surveyLinks that contain surveyId (local).
+            // The surveys in Firebase don't contain their local ID.
+            // But we know the seeded "Course Feedback" is always local ID 1.
+            // The user's custom survey "Nee" has local ID 2.
+            // 
+            // Best fix: find the unique survey by deduplication and position.
+            
+            // Deduplicate surveys by title (keep first occurrence)
+            const uniqueSurveys = [];
+            const seenTitles = new Set();
+            for (const [key, val] of surveyEntries) {
+                if (!seenTitles.has(val.title)) {
+                    seenTitles.add(val.title);
+                    uniqueSurveys.push({ key, ...val });
+                }
+            }
+
+            // Map local Room ID to the Nth unique survey (1-indexed)
+            const surveyIndex = Number(surveyLocalId) - 1;
+            if (surveyIndex >= 0 && surveyIndex < uniqueSurveys.length) {
+                surveyObj = uniqueSurveys[surveyIndex];
+                matchedSurveyKey = uniqueSurveys[surveyIndex].key;
+            } else if (uniqueSurveys.length > 0) {
+                // Fallback to last unique survey
+                surveyObj = uniqueSurveys[uniqueSurveys.length - 1];
+                matchedSurveyKey = surveyObj.key;
+            }
+
+            if (!surveyObj) {
+                showErrorPage('Survey not found.');
+                return;
+            }
+
+            if (surveyObj.isActive === false || surveyObj.isActive === 0) {
+                showErrorPage('This survey is no longer accepting responses.');
+                return;
+            }
+
+            surveyTitle.textContent = surveyObj.title;
+            surveyDescription.textContent = surveyObj.description || 'Please complete the questions below.';
+            requiresRegistration = (surveyObj.requiresRegistration === true || surveyObj.requiresRegistration === 1);
+            surveyFirebaseKey = matchedSurveyKey;
+
+            if (requiresRegistration) {
+                registrationContainer.classList.remove('hidden');
+            }
+
+            // Step 3: Process matched questions
+            if (matchedQuestions.length === 0) {
+                showErrorPage('This survey does not have any questions.');
+                return;
+            }
+
+            // Sort by orderIndex
+            matchedQuestions.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+
+            // Step 4: Fetch options for SINGLE_CHOICE and MULTIPLE_CHOICE questions
+            let optionsData = null;
+            const needsOptions = matchedQuestions.some(q => q.type === 'SINGLE_CHOICE' || q.type === 'MULTIPLE_CHOICE');
+            if (needsOptions) {
+                const optRes = await fetch(`${DB}questionoptions.json`);
+                if (optRes.ok) {
+                    optionsData = await optRes.json();
+                }
+            }
+
+            for (const q of matchedQuestions) {
+                if ((q.type === 'SINGLE_CHOICE' || q.type === 'MULTIPLE_CHOICE') && optionsData) {
+                    // Find options where questionId matches this question's Firebase key
+                    q.options = [];
+                    for (const [optKey, optVal] of Object.entries(optionsData)) {
+                        if (optVal.questionId === q.key) {
+                            q.options.push({ key: optKey, ...optVal });
+                        }
+                    }
+                    q.options.sort((a, b) => (a.orderIndex || 0) - (b.orderIndex || 0));
+                }
+            }
+
+            questionsList = matchedQuestions;
+            renderFormQuestions();
+
+            // Hide loading, show form
+            loadingPanel.classList.add('hidden');
+            surveyForm.classList.remove('hidden');
+
+        } catch (err) {
+            console.error(err);
+            showErrorPage(err.message || 'An error occurred while loading the survey.');
+        }
+    });
+
+    function showErrorPage(msg) {
+        loadingPanel.classList.add('hidden');
+        errorAlert.textContent = msg;
+        errorPanel.classList.remove('hidden');
+    }
+
+    function renderFormQuestions() {
+        questionsContainer.innerHTML = '';
+        questionsList.forEach((q, idx) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+
+            const title = document.createElement('div');
+            title.className = 'question-title';
+            title.innerHTML = `${idx + 1}. ${q.text} <span class="required-star">*</span>`;
+            card.appendChild(title);
+
+            if (q.type === 'TEXT') {
+                const textarea = document.createElement('textarea');
+                textarea.name = q.key;
+                textarea.required = true;
+                textarea.placeholder = 'Type your answer here...';
+                card.appendChild(textarea);
+            } else if (q.type === 'SINGLE_CHOICE') {
+                if (q.options && q.options.length > 0) {
+                    q.options.forEach(opt => {
+                        const label = document.createElement('label');
+                        label.className = 'option-item';
+                        label.innerHTML = `<input type="radio" name="${q.key}" value="${opt.text}" required> <span>${opt.text}</span>`;
+                        card.appendChild(label);
+                    });
+                } else {
+                    card.innerHTML += '<div style="color: var(--error-color); font-size: 13px;">No options available</div>';
+                }
+            } else if (q.type === 'MULTIPLE_CHOICE') {
+                if (q.options && q.options.length > 0) {
+                    q.options.forEach(opt => {
+                        const label = document.createElement('label');
+                        label.className = 'option-item';
+                        label.innerHTML = `<input type="checkbox" name="${q.key}" value="${opt.text}" data-qkey="${q.key}"> <span>${opt.text}</span>`;
+                        card.appendChild(label);
+                    });
+                } else {
+                    card.innerHTML += '<div style="color: var(--error-color); font-size: 13px;">No options available</div>';
+                }
+            }
+
+            questionsContainer.appendChild(card);
+        });
+    }
+
+    // Submit handler
+    surveyForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        formErrorBox.classList.add('hidden');
+
+        // 1. Validation
+        if (requiresRegistration) {
+            const nameVal = respondentName.value.trim();
+            const emailVal = respondentEmail.value.trim();
+
+            if (!nameVal || !emailVal) {
+                showFormError('Please fill in your Name and Email address.');
+                return;
+            }
+        }
+
+        // Validate that at least one checkbox is checked for each MULTIPLE_CHOICE question
+        for (const q of questionsList) {
+            if (q.type === 'MULTIPLE_CHOICE') {
+                const checkboxes = document.querySelectorAll(`input[data-qkey="${q.key}"]:checked`);
+                if (checkboxes.length === 0) {
+                    showFormError(`Please select at least one option for question: "${q.text}"`);
+                    return;
+                }
+            }
+        }
+
+        // If everything passes, lock submit button
+        const submitBtn = surveyForm.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting...';
+
+        try {
+            let respondentKey = null;
+
+            // 2. Submit Respondent if required
+            if (requiresRegistration) {
+                const nameVal = respondentName.value.trim();
+                const emailVal = respondentEmail.value.trim();
+
+                const respRes = await fetch(`${DB}respondents.json`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: nameVal,
+                        email: emailVal,
+                        registeredAt: new Date().toString()
+                    })
+                });
+
+                if (!respRes.ok) throw new Error('Failed to record respondent information.');
+                const respData = await respRes.json();
+                respondentKey = respData.name;
+            }
+
+            // 3. Submit Response
+            const responseRes = await fetch(`${DB}responses.json`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    surveyId: String(surveyLocalId),
+                    respondentId: respondentKey || null,
+                    submittedAt: new Date().toString(),
+                    synced: false
+                })
+            });
+
+            if (!responseRes.ok) throw new Error('Failed to submit survey responses.');
+            const responseData = await responseRes.json();
+            const responseKey = responseData.name;
+
+            // 4. Submit Answers
+            for (const q of questionsList) {
+                let answerVal = '';
+
+                if (q.type === 'TEXT') {
+                    const textarea = document.querySelector(`textarea[name="${q.key}"]`);
+                    answerVal = textarea ? textarea.value.trim() : '';
+                } else if (q.type === 'SINGLE_CHOICE') {
+                    const selectedRadio = document.querySelector(`input[name="${q.key}"]:checked`);
+                    answerVal = selectedRadio ? selectedRadio.value : '';
+                } else if (q.type === 'MULTIPLE_CHOICE') {
+                    const selectedCheckboxes = document.querySelectorAll(`input[data-qkey="${q.key}"]:checked`);
+                    const checkedValues = Array.from(selectedCheckboxes).map(cb => cb.value);
+                    answerVal = checkedValues.join(', ');
+                }
+
+                const ansRes = await fetch(`${DB}answers.json`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        responseId: responseKey,
+                        questionId: q.key,
+                        answerValue: answerVal
+                    })
+                });
+
+                if (!ansRes.ok) throw new Error('An error occurred while submitting question responses.');
+            }
+
+            // 5. Hide form and show success screen
+            surveyForm.classList.add('hidden');
+            successPanel.classList.remove('hidden');
+
+        } catch (err) {
+            console.error(err);
+            showFormError(err.message || 'Submission failed. Please check your internet connection.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Responses';
+        }
+    });
+
+    function showFormError(msg) {
+        formErrorBox.textContent = msg;
+        formErrorBox.classList.remove('hidden');
+        // Scroll to error box
+        formErrorBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+</script>
+</body>
+</html>
